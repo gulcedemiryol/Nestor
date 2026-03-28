@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "mobile",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gulce.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "package": "com.gulce.mobile"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Faturalarınızı galeriye kaydetmek ve seçmek için izin gerekiyor.",
+          "cameraPermission": "Faturaları taramak ve vasi onayı için fotoğraf çekmek amacıyla kamerayı kullanıyoruz."
+        }
+      ]
+    ]
+  }
+}
