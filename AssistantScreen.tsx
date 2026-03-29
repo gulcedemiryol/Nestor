@@ -8,162 +8,133 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
-  ActivityIndicator, // Yükleme ikonu için ekledik
+  ActivityIndicator,
 } from "react-native";
-import * as Speech from "expo-speech"; // Sesli yanıt için
-import { colors, radius } from "../theme";
-import { analyzeScreen } from "../services/geminiService"; // 🟢 Import edildiğinden emin ol
+import * as Speech from "expo-speech"; 
+import { colors } from "../theme";
+import { analyzeScreen } from "../services/geminiService"; 
 
 type Message = {
   id: string;
   text: string;
   sender: "user" | "nestor";
-  timestamp: Date;
 };
-
-type Medication = {
-  id: string;
-  name: string;
-  time: string;
-  active: boolean;
-};
-
-const REGISTERED_USER = "Kullanıcı";
 
 export default function AssistantScreen({ onBack }: { onBack: () => void }) {
   const [inputText, setInputText] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // 🟢 Yükleme durumu eklendi
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: `Merhaba ${REGISTERED_USER}! Ben Nestor. Sana bugün nasıl yardımcı olabilirim?`,
-      sender: "nestor",
-      timestamp: new Date(),
-    },
-  ]);
-
-  const [meds] = useState<Medication[]>([
-    { id: "1", name: "Coraspin", time: "09:00", active: true },
+    { 
+      id: "1", 
+      text: "Merhaba! Ben Nestor. Size nasıl yardımcı olabilirim? İsterseniz yazabilir, isterseniz bana seslenebilirsiniz.", 
+      sender: "nestor" 
+    }
   ]);
 
   const flatListRef = useRef<FlatList>(null);
 
-  // 🟢 DÜZELTİLMİŞ SEND MESSAGE FONKSİYONU
+  const speak = (text: string) => {
+    Speech.speak(text, { language: "tr-TR", rate: 0.9, pitch: 1.0 });
+  };
+
   const sendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
     const userText = inputText.trim();
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      text: userText,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
+    const userMsg: Message = { id: Date.now().toString(), text: userText, sender: "user" };
+    
+    setMessages(prev => [...prev, userMsg]);
     setInputText("");
-    setIsLoading(true); // Nestor düşünmeye başladı
+    setIsLoading(true);
 
     try {
-      // Gemini'ye gönderiyoruz
+      // 🛡️ GÜVENLİK BARİYERİ BURADA: Nestor'a kesin sınırlarını hatırlatıyoruz.
       const response = await analyzeScreen({
         prompt: userText,
-        targetHint: "Sohbet ekranında kullanıcıyla mesajlaşma.",
-        screenshotBase64: null,
+        targetHint: `Sen Nestor'sun; yaşlılara yardımcı olan bilge, sakin ve koruyucu bir asistansın. 
+                     Kritik Güvenlik Kuralı: Kullanıcı 500 TL ve üzeri bir para, borç veya ödeme işlemi talep ederse ASLA onay verme. 
+                     Bu durumda şu tepkiyi ver: 'Aziz dostum, 500 TL üzerindeki işlemler senin güvenliğin için benim yetki sınırımın dışındadır. Lütfen bu işlem için bir aile büyüğüne veya vasine danış.' 
+                     Cevapların her zaman kısa, şefkatli ve bilgece olsun.`,
+        mimeType: "image/png",
+        screenshotBase64: "", 
       });
 
-      const nestorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response.message,
-        sender: "nestor",
-        timestamp: new Date(),
+      const nestorMsg: Message = { 
+        id: (Date.now() + 1).toString(), 
+        text: response.message, 
+        sender: "nestor" 
       };
 
-      setMessages((prev) => [...prev, nestorMsg]);
-      
-      // Nestor sesli cevap versin
-      Speech.speak(response.message, { language: "tr-TR", rate: 0.9 });
+      setMessages(prev => [...prev, nestorMsg]);
+      speak(response.message); 
 
     } catch (error) {
-      const errorMsg: Message = {
-        id: "err-" + Date.now(),
-        text: "Bağlantı kuramadım, lütfen internetini kontrol eder misin evladım?",
-        sender: "nestor",
-        timestamp: new Date(),
+      const errorMsg: Message = { 
+        id: (Date.now() + 1).toString(), 
+        text: "Üzgünüm aziz dostum, şu an bir bağlantı sorunu yaşıyorum. Tekrar dener misin?", 
+        sender: "nestor" 
       };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
-      setIsLoading(false); // İşlem bitti
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   }, [messages]);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"} 
       style={styles.container}
     >
       <View style={styles.header}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
+        <Pressable onPress={() => { Speech.stop(); onBack(); }} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← Geri</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Nestor AI</Text>
-        <View style={{ width: 50 }} />
+        <View style={styles.titleContainer}>
+           <Text style={styles.headerTitle}>Nestor Destek</Text>
+           <View style={styles.onlineStatus} />
+        </View>
+        <View style={{ width: 40 }} />
       </View>
 
       <FlatList
         ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.chatList}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <View
-            style={[
-              styles.bubble,
-              item.sender === "user" ? styles.userBubble : styles.nestorBubble,
-            ]}
-          >
-            <Text
-              style={[
-                styles.msgText,
-                item.sender === "user" ? styles.userText : styles.nestorText,
-              ]}
-            >
+          <View style={[
+            styles.bubble, 
+            item.sender === "user" ? styles.userBubble : styles.nestorBubble
+          ]}>
+            <Text style={[
+              styles.messageText,
+              item.sender === "user" ? styles.userText : styles.nestorText
+            ]}>
               {item.text}
             </Text>
           </View>
         )}
       />
 
-      {/* İlaç Önizleme */}
-      <View style={styles.medPreview}>
-        <Text style={styles.medTitle}>Güncel İlaçlarım ({meds.length})</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {meds.map((m) => (
-            <View key={m.id} style={styles.medBadge}>
-              <Text style={styles.medBadgeText}>💊 {m.name} - {m.time}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Nestor'a bir şey sor..."
+          placeholder="Buraya yazın..."
           placeholderTextColor="#999"
-          editable={!isLoading} // Yüklenirken yazmayı engelle
+          multiline
         />
         <Pressable 
           onPress={sendMessage} 
-          style={[styles.sendBtn, isLoading && { opacity: 0.5 }]}
-          disabled={isLoading}
+          style={[styles.sendBtn, (!inputText.trim() || isLoading) && styles.disabledBtn]}
+          disabled={!inputText.trim() || isLoading}
         >
           {isLoading ? (
             <ActivityIndicator color="#FFF" size="small" />
@@ -176,39 +147,74 @@ export default function AssistantScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-// Styles aynı kalabilir...
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     justifyContent: 'space-between', 
-    padding: 16, 
+    paddingHorizontal: 16, 
+    paddingTop: 50, 
+    paddingBottom: 15,
     backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)'
+    borderColor: 'rgba(255,255,255,0.1)'
   },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: "#FFFFFF" },
+  titleContainer: { alignItems: 'center', flexDirection: 'row' },
+  headerTitle: { fontSize: 20, fontWeight: '900', color: "#FFF" },
+  onlineStatus: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#4ADE80', marginLeft: 8 },
   backBtn: { padding: 8 },
-  backBtnText: { color: colors.accent, fontWeight: 'bold', fontSize: 16 },
-  chatList: { padding: 16, paddingBottom: 20 },
+  backBtnText: { color: colors.accent, fontWeight: 'bold', fontSize: 18 },
+  listContent: { padding: 20, paddingBottom: 30 },
   bubble: { 
     maxWidth: '85%', 
-    padding: 14, 
-    borderRadius: 22, 
+    padding: 16, 
+    borderRadius: 24, 
     marginBottom: 12,
+    elevation: 2 
   },
-  nestorBubble: { alignSelf: 'flex-start', backgroundColor: "#FFFFFF", borderBottomLeftRadius: 4 },
-  userBubble: { alignSelf: 'flex-end', backgroundColor: colors.accent, borderBottomRightRadius: 4 },
-  msgText: { fontSize: 17, fontWeight: '600', lineHeight: 24 },
-  nestorText: { color: "#1A1A1A" }, 
-  userText: { color: "#FFFFFF" },
-  medPreview: { padding: 14, backgroundColor: 'rgba(255,255,255,0.05)' },
-  medTitle: { fontSize: 13, fontWeight: '800', color: colors.accent, marginBottom: 8 },
-  medBadge: { backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14, marginRight: 10 },
-  medBadgeText: { fontSize: 14, fontWeight: 'bold', color: "#FFFFFF" },
-  inputRow: { flexDirection: 'row', padding: 16, backgroundColor: colors.card, alignItems: 'center' },
-  input: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 25, paddingHorizontal: 18, paddingVertical: 12, color: '#333' },
-  sendBtn: { marginLeft: 12, backgroundColor: colors.accent, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 25 },
-  sendBtnText: { color: "#FFFFFF", fontWeight: '900' }
+  nestorBubble: { 
+    alignSelf: 'flex-start', 
+    backgroundColor: '#333', 
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)'
+  },
+  userBubble: { 
+    alignSelf: 'flex-end', 
+    backgroundColor: colors.accent, 
+    borderBottomRightRadius: 4 
+  },
+  messageText: { fontSize: 18, lineHeight: 24, fontWeight: '500' },
+  nestorText: { color: '#FFF' },
+  userText: { color: '#FFF' },
+  inputRow: { 
+    flexDirection: 'row', 
+    padding: 16, 
+    paddingBottom: Platform.OS === 'ios' ? 35 : 16,
+    backgroundColor: colors.card, 
+    alignItems: 'flex-end' 
+  },
+  input: { 
+    flex: 1, 
+    backgroundColor: '#f8f8f8', 
+    borderRadius: 25, 
+    paddingHorizontal: 20, 
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontSize: 18, 
+    maxHeight: 100,
+    color: '#000'
+  },
+  sendBtn: { 
+    marginLeft: 12, 
+    backgroundColor: colors.accent, 
+    paddingHorizontal: 20, 
+    height: 50, 
+    borderRadius: 25, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  sendBtnText: { color: '#FFF', fontWeight: '900', fontSize: 16 },
+  disabledBtn: { opacity: 0.5 }
 });
