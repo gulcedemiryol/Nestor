@@ -1,45 +1,23 @@
 # Nestor
 
-Nestor: Yaşlılar İçin Bilge ve Güvenli Asistan
-Nestor, teknolojiden çekinen veya dijital dünyada kendini güvensiz hisseden yaşlı bireyler ile teknoloji arasında güvenli, sade ve "bilge" bir köprü kurmak amacıyla geliştirilmiş multimodal bir asistandır.
+#Problem
+Günümüzde 65 yaş üstü bireyler, teknolojinin karmaşıklığı ve dijital dolandırıcılık riskleri nedeniyle dijital dünyadan izole kalıyor. Mevcut asistanlar bu kitle için çok hızlı ve soğuk kalırken; güvenlik açıkları yaşlılarımızı finansal risklerle karşı karşıya bırakıyor.
 
- Projenin Vizyonu
-Hazırlık sınıfı öğrencisi olarak geliştirdiğim bu projede temel odak noktam; sadece bir yapay zeka botu yapmak değil, yaşlı kullanıcıların "dijital dolandırıcılık" korkusunu yenmelerini sağlayacak, onlara bir "Aziz Dost" gibi hitap eden, bilişsel yükü azaltılmış bir deneyim sunmaktır.
+#Çözüm
+Nestor, yaşlı bireylerin teknoloji kullanımını "çile" olmaktan çıkarıp "keyif" haline getiren, Groq LPU™ altyapısı ile güçlendirilmiş bir yapay zeka asistanıdır. AI (Llama 3), kullanıcıya "Aziz Dost" şefkatiyle yaklaşarak günlük işlemleri (Aile Arama, Fatura Ödeme, Market) sadeleştirir ve 500 TL üzerindeki şüpheli işlemleri vasi onayına sunan bir "Güvenlik Filtresi" görevi görür.
 
- Teknik Özellikler & Güvenlik Bariyeri
-Proje, sadece bir arayüzden ibaret olmayıp arka planda çalışan kritik kontrol mekanizmalarına sahiptir:
+#Canlı Demo
+Yayın Linki: Uygulama, yüksek performans ve özel erişilebilirlik (A11y) kütüphaneleri içerdiği için Yerel Demo (Expo Go) ortamında en stabil şekilde çalışmaktadır. Tüm fonksiyonel akış (Güvenlik Bariyeri, Market, Fatura) ekteki Loom Videosu üzerinden izlenebilir.
+Demo Video: https://www.loom.com/share/4da0794b7afc47828eb24e11c0f1444f
 
- Financial Barrier (MVP): Yaşlı bireyleri korumak adına 500 TL ve üzeri işlemlerde ödeme akışını otomatik olarak askıya alır. Bu süreçte vasi onayını simüle eden bir transactionGate.ts kontrolü çalışır.
+#Kullanılan Teknolojiler
+Frontend: React Native & Expo (iOS/Android erişilebilirlik servisleri ile tam entegrasyon).
+AI Engine: Groq API & Llama 3 (Ultra hızlı doğal dil işleme ve empatik persona).
+Güvenlik Mantığı: Risk Skorlama Formülü R = (C x 0.4) + (U x 0.3) + (S x 0.3)
+Design: User-Centered Design (Yaşlılar için optimize edilmiş Bento Grid arayüzü).
 
- Multimodal Etkileşim: Sesli komut ve metin tabanlı hibrit bir yapı hedeflenmiştir.
-
- Risk Engine: Şüpheli işlemleri ve niyetleri analiz eden bir mantık katmanı (riskEngine.ts) içerir.
-
- Dosya Yapısı ve Dokümantasyon
-Jüri değerlendirmesi için projenin tüm planlama aşamaları dökümante edilmiştir:
-
- idea.md: Projenin çıkış noktası ve çözüm sunduğu problemler.
- prd.md: Ürün gereksinimleri ve teknik detaylar.
- tasks.md: Geliştirme süreci ve tamamlanan görevler.
- user-flow.md: Kullanıcı deneyimi adımları.
- tech-stack.md: Kullanılan teknolojiler (React Native, Expo, Gemini/Groq).
-
- Kurulum ve Çalıştırma
-Projeyi yerel ortamınızda test etmek için:
-
-Bağımlılıklar: Node.js (LTS) kurulu olduğundan emin olun.
-
-API Anahtarı: Kök dizinde bir .env dosyası oluşturun ve GROQ_API_KEY=... tanımını yapın.
- 
- Neden Groq? (Teknik Altyapı)
-Nestor'un cevap verme hızı, yaşlı kullanıcıların beklerken kopmamasını sağlamak için Groq'un düşük gecikmeli (low-latency) LPU™ teknolojisi üzerine kurulmuştur. Bu sayede etkileşim, gerçek bir insanla konuşuyormuşçasına akıcıdır.
-
-Başlatma:
-Bash
-npm install
-npm run dev
- 
- Tasarım Notu (UX)
-Uygulama tasarımı, hedef kitle olan 65+ bireylerin ihtiyaçları doğrultusunda bilinçli olarak "Minimalist ve Erişilebilir" tutulmuştur. Büyük butonlar, yüksek kontrastlı renkler ve net metinler önceliklendirilmiştir.
-
-"Teknoloji herkes içindir, yeter ki onlara doğru dille anlatılsın."
+#Nasıl Çalıştırılır?
+Projeyi indirin: git clone https://github.com/gulce/Nestor
+Bağımlılıkları yükleyin: npm install
+API Anahtarı: .env dosyanıza VITE_GROQ_API_KEY anahtarınızı ekleyin.
+Uygulamayı başlatın: npx expo start
